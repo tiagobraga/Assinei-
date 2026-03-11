@@ -60,6 +60,7 @@
       "main.cjs",
       "preload.cjs",
       "src/backend/**/*.cjs",
+      "src/backend/**/*.png",
       "ipe.png"
     ],
     "mac": {

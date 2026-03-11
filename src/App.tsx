@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileUp, Settings, User, ListPlus, FileSignature } from 'lucide-react';
+import { Settings, User, ListPlus, FileSignature } from 'lucide-react';
 import PdfViewer from './components/PdfViewer';
 
 declare global {
@@ -37,8 +37,6 @@ export default function App() {
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [selectedCertIndex, setSelectedCertIndex] = useState<number>(0);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isSigning, setIsSigning] = useState(false);
   const [signatureBox, setSignatureBox] = useState<{ page: number, x: number, y: number, w: number, h: number } | null>(null);
 
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -175,7 +173,7 @@ export default function App() {
           {tabs.length === 0 ? (
             <div className="px-4 py-2 text-sm text-gray-500 italic">Nenhum documento aberto</div>
           ) : (
-            tabs.map((tab, idx) => (
+            tabs.map((tab) => (
               <div
                 key={tab.id}
                 className={`min-w-32 max-w-64 flex items-center justify-between px-4 py-2 text-sm rounded-t-lg border border-b-0 cursor-pointer transition ${activeTabId === tab.id
@@ -208,7 +206,7 @@ export default function App() {
           {tabs.length === 0 || !activeTabId ? (
             <div className="text-center max-w-sm">
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mb-4 inline-block">
-                <img src="/ipe.png" alt="Logomarca Assinei!" className="mx-auto mb-4 h-16 object-contain" />
+                <img src="./ipe.png" alt="Logomarca Assinei!" className="mx-auto mb-4 h-16 object-contain" />
                 <h2 className="text-xl font-semibold text-gray-800">Assinei!</h2>
                 <p className="text-sm text-gray-500 mt-2">Arraste seus PDFs para esta área ou clique em Abrir.</p>
               </div>
@@ -387,7 +385,7 @@ export default function App() {
               <div className="p-6">
                 <div className="mb-6 flex justify-center">
                   <div className="h-16 flex items-center justify-center">
-                    <img src="/ipe.png" alt="Logomarca Assinei" className="h-full object-contain" />
+                    <img src="./ipe.png" alt="Logomarca Assinei" className="h-full object-contain" />
                   </div>
                 </div>
 
