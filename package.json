@@ -1,7 +1,12 @@
 {
-  "name": "app",
+  "name": "0306_p_assinador_pdf",
   "private": true,
   "version": "0.0.0",
+  "description": "Sistema de assinatura PAdES e ICP-Brasil.",
+  "author": {
+    "name": "Tiago Emmanuel Nunes Braga",
+    "email": "tiago.braga@developer.local"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -68,6 +73,22 @@
       "target": [
         "dmg"
       ],
+      "icon": "ipe.png",
+      "identity": null
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "ipe.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office",
       "icon": "ipe.png"
     }
   }

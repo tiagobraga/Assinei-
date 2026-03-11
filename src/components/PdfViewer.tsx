@@ -22,6 +22,12 @@ const PdfViewer: React.FC<PdfViewerProps> = ({ fileData, onSignatureChange }) =>
         setNumPages(numPages);
     };
 
+    // Apaga a seleção visual customizada se o arquivo for alterado (Ex: Acabou de ser assinado)
+    React.useEffect(() => {
+        setSignatureBox(null);
+        if (onSignatureChange) onSignatureChange(1, 0, 0, 0, 0);
+    }, [fileData]);
+
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>, pageIndex: number) => {
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.clientX - rect.left;
