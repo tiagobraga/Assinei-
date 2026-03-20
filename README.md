@@ -13,6 +13,14 @@
 - **Integração SERPRO-ID:** Acionamento dinâmico via arquitetura IPC Main/Bridge para os drivers e bibliotecas criptográficas nativas do Serpro (`PKCS#11`), gerando as requisições que caem no seu smartphone via Token push.
 - **Segurança de Sandbox:** Executável livre de metadados, operado contextualmente protegido (ContextIsolation).
 
+## Downloads (v1.0.0)
+
+A versão v1.0.0 já está disponível com instaladores automáticos:
+
+- 💻 **Windows** (Instalador Nativo): [Baixar Exe](https://github.com/tiagobraga/Assinei-/releases/download/v1.0.0/Assinei.Setup.0.0.0.exe)
+- 🐧 **Linux** (Pacote Debian): [Baixar .deb](https://github.com/tiagobraga/Assinei-/releases/download/v1.0.0/0306_p_assinador_pdf_0.0.0_amd64.deb)
+- 🐧 **Linux** (Portátil AppImage): [Baixar .AppImage](https://github.com/tiagobraga/Assinei-/releases/download/v1.0.0/Assinei.-0.0.0.AppImage)
+
 ## Fluxo de Desenvolvimento (Walkthrough)
 
 O Assinei! foi idealizado num esforço concentrado de modelagem progressiva, cujos destaques incluem:
@@ -41,4 +49,4 @@ npm run electron:build
 ## Credenciais
 * **Desenvolvedor:** Tiago Emmanuel Nunes Braga 
 * **Currículo Lattes:** [Acessar Lattes](https://lattes.cnpq.br/8376134230259399)
-* **Status do Projeto:** Ativo, Funcional & Open-Source.
+* **Status do Projeto:** v1.0.0 Lançada publicamente! (Sistema Ativo, Funcional & Open-Source).
