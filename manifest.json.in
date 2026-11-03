@@ -1,0 +1,16 @@
+{
+    "name": "assinei-ut.braga",
+    "title": "Assinei!",
+    "description": "Sistema de assinatura digital PAdES com certificado em nuvem SerproID no padrão ICP-Brasil para Ubuntu Touch",
+    "architecture": "all",
+    "framework": "ubuntu-touch-24.04-1.x",
+    "version": "1.0.0",
+    "maintainer": "Tiago Braga <tiago.braga@gmail.com>",
+    "hooks": {
+        "assinei-ut": {
+            "apparmor": "assinei.apparmor",
+            "desktop": "assinei.desktop",
+            "content-hub": "assinei.content-hub"
+        }
+    }
+}

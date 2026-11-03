@@ -1,0 +1,14 @@
+clickable_minimum_required: 8.0.0
+builder: pure
+framework: ubuntu-touch-24.04-1.x
+ignore:
+  - .git
+  - .gitignore
+  - node_modules
+  - release
+  - openstore
+  - scripts
+  - tests
+  - __pycache__
+  - "*.pyc"
+  - "*.click"

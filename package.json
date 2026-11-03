@@ -12,6 +12,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:ut": "tsc -b && vite build",
+    "build:click": "tsc -b && vite build && python3 scripts/build_click.py",
     "lint": "eslint .",
     "preview": "vite preview",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on tcp:5173 && electron . --no-sandbox\"",

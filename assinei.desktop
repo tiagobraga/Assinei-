@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Assinei!
+Comment=Assinatura Digital PAdES com SerproID no padrão ICP-Brasil
+Exec=qmlscene %u qml/Main.qml
+Icon=assets/ipe.png
+Terminal=false
+Type=Application
+Categories=Office;Viewer;
+MimeType=application/pdf;
+X-Lomiri-Touch=true
+X-Lomiri-Single-Instance=true

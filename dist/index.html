@@ -1,0 +1,1499 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Assinei! — Ubuntu Touch</title>
+  <script>
+    (function(G){
+      function at(n){
+        n=Math.trunc(n)||0;
+        if(n<0)n+=this.length;
+        if(n<0||n>=this.length)return undefined;
+        return this[n];
+      }
+      if(!Array.prototype.at)Object.defineProperty(Array.prototype,"at",{value:at,writable:true,configurable:true});
+      if(!String.prototype.at)Object.defineProperty(String.prototype,"at",{value:at,writable:true,configurable:true});
+      if(typeof Uint8Array!=="undefined"){
+        var TP=Object.getPrototypeOf(Uint8Array.prototype);
+        if(TP&&!TP.at)Object.defineProperty(TP,"at",{value:at,writable:true,configurable:true});
+      }
+      if(!Object.hasOwn){
+        Object.hasOwn=function(o,p){return Object.prototype.hasOwnProperty.call(o,p);};
+      }
+      if(typeof G.structuredClone!=="function"){
+        G.structuredClone=function sc(v){
+          if(v===null||typeof v!=="object")return v;
+          if(v instanceof Date)return new Date(v.getTime());
+          if(v instanceof RegExp)return new RegExp(v.source,v.flags);
+          if(v instanceof ArrayBuffer||ArrayBuffer.isView(v))return v;
+          if(v instanceof Map){var m=new Map();v.forEach(function(val,k){m.set(sc(k),sc(val));});return m;}
+          if(v instanceof Set){var s=new Set();v.forEach(function(val){s.add(sc(val));});return s;}
+          if(Array.isArray(v)){var a=new Array(v.length);for(var i=0;i<v.length;i++)a[i]=sc(v[i]);return a;}
+          var o={};for(var k in v){if(Object.prototype.hasOwnProperty.call(v,k))o[k]=sc(v[k]);}return o;
+        };
+      }
+    })(typeof globalThis!=="undefined"?globalThis:(typeof self!=="undefined"?self:this));
+  </script>
+  <script src="./pdf.worker.min.js?v=3"></script>
+  <script src="./pdf.min.js?v=3"></script>
+  <style>
+    :root {
+      --blue-50: #eff6ff;
+      --blue-100: #dbeafe;
+      --blue-200: #bfdbfe;
+      --blue-500: #3b82f6;
+      --blue-600: #2563eb;
+      --blue-700: #1d4ed8;
+      --blue-800: #1e40af;
+      --green-50: #f0fdf4;
+      --green-600: #16a34a;
+      --green-700: #15803d;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --red-50: #fef2f2;
+      --red-500: #ef4444;
+      --red-600: #dc2626;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      font-family: "Ubuntu", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--gray-100);
+      color: var(--gray-900);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Barra Superior Mobile (Topo) */
+    .top-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-box img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--gray-900);
+      line-height: 1.1;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--blue-600);
+    }
+
+    .top-cert-pill {
+      border: 1px solid var(--blue-200);
+      background: var(--blue-50);
+      color: var(--blue-700);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      max-width: 190px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-cert-pill.has-cert {
+      background: var(--green-50);
+      border-color: #bbf7d0;
+      color: var(--green-700);
+    }
+
+    /* Barra de Abas de Documentos */
+    .tabs-bar {
+      background: var(--gray-100);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      padding: 6px 10px 0 10px;
+      gap: 6px;
+      overflow-x: auto;
+      flex-shrink: 0;
+      min-height: 40px;
+    }
+
+    .tabs-empty {
+      font-size: 12px;
+      color: var(--gray-500);
+      font-style: italic;
+      padding: 2px 6px 6px 6px;
+    }
+
+    .tab-item {
+      min-width: 130px;
+      max-width: 240px;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 10px 10px 0 0;
+      border: 1px solid transparent;
+      border-bottom: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--gray-600);
+      background: var(--gray-200);
+      flex-shrink: 0;
+    }
+
+    .tab-item.active {
+      background: #fff;
+      border-color: var(--gray-300);
+      color: var(--blue-700);
+      font-weight: 700;
+    }
+
+    .tab-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tab-close {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.06);
+      color: var(--gray-600);
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Área Central */
+    .viewport {
+      flex: 1;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: #dfe3e8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .empty-card {
+      margin: auto;
+      background: #fff;
+      padding: 26px 20px;
+      border-radius: 20px;
+      border: 1px solid var(--gray-200);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+      text-align: center;
+      max-width: 360px;
+      width: calc(100% - 28px);
+    }
+
+    .empty-card img {
+      height: 68px;
+      object-fit: contain;
+      margin-bottom: 12px;
+    }
+
+    .empty-card h2 {
+      font-size: 21px;
+      font-weight: 800;
+      color: var(--gray-800);
+    }
+
+    .empty-card p {
+      font-size: 14px;
+      color: var(--gray-600);
+      margin-top: 10px;
+      line-height: 1.45;
+    }
+
+    .btn-primary {
+      background: var(--blue-600);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      box-shadow: 0 3px 10px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-primary:active {
+      background: var(--blue-700);
+    }
+
+    .btn-success {
+      background: var(--green-600);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      box-shadow: 0 3px 10px rgba(22, 163, 74, 0.25);
+    }
+
+    .btn-secondary {
+      background: var(--gray-100);
+      color: var(--gray-800);
+      border: 1px solid var(--gray-300);
+      border-radius: 14px;
+      padding: 13px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    /* Barra Flutuante de Modo (Rolar vs Posicionar) */
+    .viewer-toolbar {
+      position: sticky;
+      top: 10px;
+      z-index: 25;
+      margin: 10px auto;
+      background: rgba(255, 255, 255, 0.97);
+      padding: 6px;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+      border: 1px solid var(--gray-200);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: calc(100% - 24px);
+      max-width: 380px;
+    }
+
+    .mode-pill {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--gray-700);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 10px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .mode-pill.active {
+      background: var(--blue-600);
+      color: #fff;
+    }
+
+    /* Páginas do PDF */
+    .pages-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 4px 10px 90px 10px;
+      width: 100%;
+    }
+
+    .pdf-page-card {
+      position: relative;
+      background: #fff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--gray-300);
+      border-radius: 4px;
+      overflow: hidden;
+      width: 100%;
+      max-width: 720px;
+    }
+
+    .pdf-page-card.stamp-mode {
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .pdf-page-card.scroll-mode {
+      cursor: grab;
+      touch-action: pan-y;
+    }
+
+    .pdf-page-img {
+      display: block;
+      width: 100%;
+      height: auto;
+      pointer-events: none;
+    }
+
+    .sig-overlay {
+      position: absolute;
+      border: 2.5px solid var(--blue-600);
+      background: rgba(37, 99, 235, 0.22);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    .sig-overlay-label {
+      color: var(--blue-800);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95);
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sig-clear-btn {
+      margin-top: 4px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: none;
+      background: var(--red-500);
+      color: #fff;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Botão Flutuante Largo de Assinar */
+    .sign-action-bar {
+      position: fixed;
+      bottom: 84px;
+      left: 14px;
+      right: 14px;
+      z-index: 28;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .fab-sign {
+      pointer-events: auto;
+      width: 100%;
+      max-width: 380px;
+      background: var(--blue-600);
+      color: #fff;
+      border: none;
+      border-radius: 16px;
+      padding: 15px 22px;
+      font-size: 16px;
+      font-weight: 800;
+      box-shadow: 0 8px 22px rgba(37, 99, 235, 0.42);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    /* Barra Inferior Fixa (Sempre visível no Ubuntu Touch) */
+    .bottom-nav {
+      display: flex;
+      height: 74px;
+      background: #ffffff;
+      border-top: 2px solid var(--gray-200);
+      align-items: stretch;
+      justify-content: space-around;
+      padding: 4px 6px;
+      z-index: 40;
+      flex-shrink: 0;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .bottom-nav-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--gray-700);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 6px 4px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .bottom-nav-btn:active {
+      background: var(--blue-50);
+      color: var(--blue-700);
+    }
+
+    .bottom-nav-btn.primary-item {
+      color: var(--blue-600);
+    }
+
+    .bottom-nav-btn img.nav-seal-preview {
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    /* Modais Full-Mobile */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(17, 24, 39, 0.6);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 22px 22px 0 0;
+      width: 100%;
+      max-width: 540px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 16px;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--gray-900);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-close {
+      border: none;
+      background: var(--gray-100);
+      width: 36px;
+      height: 36px;
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--gray-700);
+      cursor: pointer;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      padding-right: 2px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid var(--gray-200);
+      flex-shrink: 0;
+    }
+
+    .wizard-steps {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    .step-btn {
+      border: 1.5px solid var(--gray-300);
+      background: var(--gray-50);
+      color: var(--gray-800);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 11px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .step-btn.step-1 {
+      border-color: var(--blue-500);
+      background: var(--blue-50);
+      color: var(--blue-800);
+    }
+
+    .step-btn.step-2 {
+      border-color: var(--green-600);
+      background: var(--green-50);
+      color: var(--green-700);
+    }
+
+    .info-banner {
+      background: var(--blue-50);
+      border: 1px solid var(--blue-200);
+      color: var(--blue-800);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+
+    .info-banner.error {
+      background: var(--red-50);
+      border-color: #fecaca;
+      color: var(--red-600);
+    }
+
+    .qr-box {
+      background: #ffffff;
+      border: 2px solid var(--blue-200);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .qr-box h4 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--blue-800);
+      margin-bottom: 8px;
+    }
+
+    .qr-steps-list {
+      text-align: left;
+      font-size: 13px;
+      color: var(--gray-700);
+      line-height: 1.5;
+      margin: 8px 0 12px 0;
+      padding-left: 18px;
+    }
+
+    .qr-steps-list li {
+      margin-bottom: 4px;
+    }
+
+    .qr-img-wrapper {
+      background: #fff;
+      padding: 8px;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      display: inline-block;
+      margin: 4px auto 10px auto;
+    }
+
+    .qr-img-wrapper img {
+      width: 210px;
+      height: 210px;
+      display: block;
+    }
+
+    .cert-card {
+      border: 2px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .cert-card.selected {
+      border-color: var(--blue-600);
+      background: var(--blue-50);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--blue-200);
+      border-top-color: var(--blue-600);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <input id="html-file-input" type="file" accept="application/pdf,.pdf" multiple class="hidden" />
+
+  <div id="app">
+    <!-- BARRA SUPERIOR (TOPO) -->
+    <header class="top-header">
+      <div class="brand-box">
+        <img id="header-logo-img" src="./ipe.png" alt="Assinei!" />
+        <div>
+          <div class="brand-title">Assinei!</div>
+          <div class="brand-sub">SerproID • ICP-Brasil</div>
+        </div>
+      </div>
+      <button type="button" class="top-cert-pill" id="btn-top-cert">
+        <span id="top-cert-label">🔐 Configurar SerproID</span>
+      </button>
+    </header>
+
+    <!-- BARRA DE ABAS DE DOCUMENTOS -->
+    <div class="tabs-bar" id="tabs-bar">
+      <div class="tabs-empty">Nenhum documento PDF aberto</div>
+    </div>
+
+    <!-- ÁREA CENTRAL -->
+    <div class="viewport" id="viewport">
+      <!-- Estado inicial sem documento -->
+      <div class="empty-card" id="empty-state">
+        <img src="./ipe.png" alt="Assinei!" />
+        <h2>Assinar PDF no Ubuntu Touch</h2>
+        <p>Abra um arquivo PDF e posicione onde deseja aplicar sua assinatura digital ICP-Brasil com o <strong>SerproID</strong>.</p>
+        <div style="margin-top: 18px; display: flex; flex-direction: column; gap: 10px;">
+          <button type="button" class="btn-primary" id="btn-empty-open">
+            <span>📂 Abrir Arquivo PDF</span>
+          </button>
+          <button type="button" class="btn-secondary" id="btn-empty-cert">
+            <span>🔐 Configurar Certificado SerproID</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Visualizador de Documento Ativo -->
+      <div id="doc-viewer" class="hidden" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+        <div class="viewer-toolbar">
+          <button type="button" class="mode-pill" id="mode-scroll">✋ Rolar PDF</button>
+          <button type="button" class="mode-pill active" id="mode-stamp">✒️ Posicionar Assinatura</button>
+        </div>
+        <div class="pages-container" id="pages-container"></div>
+        <div class="sign-action-bar">
+          <button type="button" class="fab-sign" id="btn-fab-sign">
+            <span>✍️ Assinar Documento com SerproID</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BARRA INFERIOR MOBILE (BASE DO APLICATIVO) -->
+    <nav class="bottom-nav">
+      <button type="button" class="bottom-nav-btn primary-item" id="btn-open-bottom">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <span>Abrir PDF</span>
+      </button>
+
+      <button type="button" class="bottom-nav-btn" id="btn-icon-bottom">
+        <img id="bottom-seal-img" class="nav-seal-preview" src="./ipe.png" alt="Logo" />
+        <span>Escolher Logo</span>
+      </button>
+
+      <button type="button" class="bottom-nav-btn primary-item" id="btn-cert-bottom">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Certificados</span>
+      </button>
+
+      <button type="button" class="bottom-nav-btn" id="btn-about-bottom">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>Sobre</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODAL DE CERTIFICADOS SERPRO-ID (FLUXO COMPUTADORES -> QR CODE -> LER CERTIFICADOS) -->
+  <div id="cert-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🔐 Certificados SerproID</h3>
+        <button type="button" class="modal-close" id="close-cert-modal">&times;</button>
+      </div>
+
+      <div class="wizard-steps">
+        <button type="button" class="step-btn step-1" id="btn-pair-serpro">
+          1️⃣ Autorizar Computador<br/><span style="font-size:11px;font-weight:600;">(Exibir QR Code)</span>
+        </button>
+        <button type="button" class="step-btn step-2" id="btn-sync-serpro">
+          2️⃣ Ler Certificados<br/><span style="font-size:11px;font-weight:600;">(Sincronizar SerproID)</span>
+        </button>
+      </div>
+
+      <div id="cert-status-banner" class="info-banner hidden"></div>
+
+      <div class="modal-body">
+        <!-- Painel de Pareamento por QR Code (Menu "Computadores" do SerproID) -->
+        <div id="pair-panel" class="qr-box hidden">
+          <h4>Passo 1: Autorizar no app SerproID</h4>
+          <ol class="qr-steps-list">
+            <li>Abra o aplicativo <strong>SerproID</strong> e toque em <strong>Computadores</strong>.</li>
+            <li>Toque no botão <strong>+ (Adicionar)</strong> e leia o <strong>QR Code</strong> abaixo.</li>
+            <li>Selecione os <strong>Certificados</strong> que deseja vincular a este dispositivo.</li>
+            <li>Depois, toque no botão <strong>2️⃣ Ler Certificados</strong> acima!</li>
+          </ol>
+          <div class="qr-img-wrapper">
+            <img id="pair-qr-img" src="" alt="QR Code SerproID" />
+          </div>
+          <div style="margin-top: 6px; display: flex; justify-content: center; gap: 8px;">
+            <button type="button" class="btn-success" id="btn-sync-inside-qr" style="padding: 11px 14px; font-size: 14px;">
+              ✅ Já li o QR Code — Ler Meus Certificados
+            </button>
+          </div>
+          <div style="margin-top: 8px;">
+            <button type="button" id="btn-new-qr" style="border:none;background:transparent;color:var(--blue-600);font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;">
+              Gerar novo código QR para este dispositivo
+            </button>
+          </div>
+        </div>
+
+        <!-- Lista de Certificados Instalados -->
+        <div id="cert-list-container"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btn-cancel-cert" style="flex:1;">Fechar</button>
+        <button type="button" class="btn-primary" id="btn-confirm-sign" style="flex:2;">✍️ Assinar com Selecionado</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE ESCOLHA DA LOGO / SELO -->
+  <div id="icon-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🖼️ Escolher Logo da Assinatura</h3>
+        <button type="button" class="modal-close" id="close-icon-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="icon-list-container"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="btn-close-icon-footer">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SOBRE -->
+  <div id="about-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>ℹ️ Sobre o Assinei!</h3>
+        <button type="button" class="modal-close" id="close-about-modal">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <img src="./ipe.png" alt="Assinei!" style="height: 60px; object-fit: contain; margin-bottom: 12px;" />
+        <p style="font-size: 14px; color: var(--gray-700); text-align: justify; line-height: 1.5; background: var(--gray-50); padding: 14px; border-radius: 14px; border: 1px solid var(--gray-200);">
+          <strong>Assinei!</strong> é um sistema open-source concebido e desenvolvido por <strong>Tiago Emmanuel Nunes Braga</strong> para assinatura digital avançada de documentos PDF no padrão PAdES / ICP-Brasil utilizando o certificado em nuvem <strong>SerproID</strong>, adaptado nativamente para <strong>Ubuntu Touch (Lomiri)</strong>.
+        </p>
+        <div style="margin-top: 12px; text-align: left; background: var(--blue-50); padding: 14px; border-radius: 14px; font-size: 13px; line-height: 1.8;">
+          <div><strong>Repositório GitHub:</strong> <a href="https://github.com/tiagobraga/Assinei-" target="_blank" rel="noreferrer">github.com/tiagobraga/Assinei-</a></div>
+          <div><strong>Currículo Lattes:</strong> <a href="https://lattes.cnpq.br/8376134230259399" target="_blank" rel="noreferrer">Tiago Emmanuel Nunes Braga</a></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-primary" id="btn-close-about">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const state = {
+        tabs: [],
+        activeTabId: null,
+        interactionMode: 'stamp',
+        signatureBox: null,
+        selectedIcon: 'ipe.png',
+        certificates: [],
+        selectedCertIndex: 0,
+        isSigning: false
+      };
+
+      const ICONS = [
+        { id: 'ipe.png', name: 'Atual (Ipê)', img: './ipe.png' },
+        { id: 'brasao.png', name: 'Brasão da República', img: './brasao.png' },
+        { id: 'ibict.png', name: 'IBICT', img: './ibict.png' }
+      ];
+
+      const tabsBar = document.getElementById('tabs-bar');
+      const emptyState = document.getElementById('empty-state');
+      const docViewer = document.getElementById('doc-viewer');
+      const pagesContainer = document.getElementById('pages-container');
+      const htmlFileInput = document.getElementById('html-file-input');
+      const modeScrollBtn = document.getElementById('mode-scroll');
+      const modeStampBtn = document.getElementById('mode-stamp');
+      const topCertPill = document.getElementById('btn-top-cert');
+      const topCertLabel = document.getElementById('top-cert-label');
+
+      function updateHeaderCertStatus() {
+        if (state.certificates && state.certificates.length > 0) {
+          const c = state.certificates[state.selectedCertIndex] || state.certificates[0];
+          const shortName = (c.subject || 'Certificado Ativo').split(':')[0].split(' ')[0];
+          topCertPill.classList.add('has-cert');
+          topCertLabel.textContent = '✅ ' + shortName;
+        } else {
+          topCertPill.classList.remove('has-cert');
+          topCertLabel.textContent = '🔐 Configurar SerproID';
+        }
+      }
+
+      function showBanner(msg, isError) {
+        const el = document.getElementById('cert-status-banner');
+        if (!msg) {
+          el.classList.add('hidden');
+          el.classList.remove('error');
+          el.textContent = '';
+        } else {
+          el.textContent = msg;
+          el.classList.toggle('error', Boolean(isError));
+          el.classList.remove('hidden');
+        }
+      }
+
+      function renderTabs() {
+        tabsBar.innerHTML = '';
+        if (state.tabs.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'tabs-empty';
+          empty.textContent = 'Nenhum documento PDF aberto';
+          tabsBar.appendChild(empty);
+          emptyState.classList.remove('hidden');
+          docViewer.classList.add('hidden');
+          return;
+        }
+
+        emptyState.classList.add('hidden');
+        docViewer.classList.remove('hidden');
+
+        state.tabs.forEach((tab) => {
+          const item = document.createElement('div');
+          item.className = 'tab-item' + (tab.id === state.activeTabId ? ' active' : '');
+          const title = document.createElement('span');
+          title.className = 'tab-title';
+          title.textContent = tab.name;
+          const closeBtn = document.createElement('button');
+          closeBtn.className = 'tab-close';
+          closeBtn.innerHTML = '&times;';
+          closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            state.tabs = state.tabs.filter((t) => t.id !== tab.id);
+            if (state.activeTabId === tab.id) {
+              state.activeTabId = state.tabs.length > 0 ? state.tabs[state.tabs.length - 1].id : null;
+              state.signatureBox = null;
+              renderActiveDocument();
+            }
+            renderTabs();
+          };
+          item.onclick = () => {
+            if (state.activeTabId !== tab.id) {
+              state.activeTabId = tab.id;
+              state.signatureBox = null;
+              renderTabs();
+              renderActiveDocument();
+            }
+          };
+          item.appendChild(title);
+          item.appendChild(closeBtn);
+          tabsBar.appendChild(item);
+        });
+      }
+
+      function attachStampInteraction(card, pageNum) {
+        let isDrawing = false;
+        let startX = 0;
+        let startY = 0;
+        let overlayEl = null;
+
+        function updateOverlay(xPx, yPx, wPx, hPx, rectW, rectH) {
+          if (!overlayEl) {
+            document.querySelectorAll('.sig-overlay').forEach((el) => el.remove());
+            overlayEl = document.createElement('div');
+            overlayEl.className = 'sig-overlay';
+            const label = document.createElement('div');
+            label.className = 'sig-overlay-label';
+            label.innerHTML = '<span>Assinatura</span><span style="font-size:10px;">(Pág ' + pageNum + ')</span>';
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'sig-clear-btn';
+            clearBtn.innerHTML = '&times;';
+            clearBtn.onclick = (ev) => {
+              ev.stopPropagation();
+              if (overlayEl) overlayEl.remove();
+              overlayEl = null;
+              state.signatureBox = null;
+            };
+            label.appendChild(clearBtn);
+            overlayEl.appendChild(label);
+            card.appendChild(overlayEl);
+          }
+          overlayEl.style.left = xPx + 'px';
+          overlayEl.style.top = yPx + 'px';
+          overlayEl.style.width = wPx + 'px';
+          overlayEl.style.height = hPx + 'px';
+
+          state.signatureBox = {
+            page: pageNum,
+            x: xPx / rectW,
+            y: yPx / rectH,
+            w: wPx / rectW,
+            h: hPx / rectH
+          };
+        }
+
+        function beginAt(clientX, clientY) {
+          if (state.interactionMode !== 'stamp') return;
+          const rect = card.getBoundingClientRect();
+          startX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+          startY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+          const defW = Math.min(rect.width - startX, Math.max(115, rect.width * 0.42));
+          const defH = Math.min(rect.height - startY, Math.max(42, rect.height * 0.08));
+          isDrawing = true;
+          updateOverlay(startX, startY, defW, defH, rect.width, rect.height);
+        }
+
+        function moveAt(clientX, clientY) {
+          if (!isDrawing || state.interactionMode !== 'stamp') return;
+          const rect = card.getBoundingClientRect();
+          const curX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+          const curY = Math.max(0, Math.min(rect.height, clientY - rect.top));
+          const rawW = Math.abs(curX - startX);
+          const rawH = Math.abs(curY - startY);
+          const w = rawW > 12 ? rawW : Math.max(115, rect.width * 0.42);
+          const h = rawH > 12 ? rawH : Math.max(42, rect.height * 0.08);
+          updateOverlay(Math.min(startX, curX), Math.min(startY, curY), w, h, rect.width, rect.height);
+        }
+
+        card.addEventListener('mousedown', (e) => beginAt(e.clientX, e.clientY));
+        card.addEventListener('mousemove', (e) => moveAt(e.clientX, e.clientY));
+        window.addEventListener('mouseup', () => { isDrawing = false; });
+
+        card.addEventListener('touchstart', (e) => {
+          if (state.interactionMode !== 'stamp') return;
+          if (e.touches.length === 1) {
+            beginAt(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }, { passive: true });
+
+        card.addEventListener('touchmove', (e) => {
+          if (!isDrawing || state.interactionMode !== 'stamp') return;
+          if (e.touches.length === 1) {
+            e.preventDefault();
+            moveAt(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }, { passive: false });
+
+        card.addEventListener('touchend', () => { isDrawing = false; });
+      }
+
+      async function renderActiveDocument() {
+        pagesContainer.innerHTML = '';
+        const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
+        if (!activeTab) return;
+
+        const loadingEl = document.createElement('div');
+        loadingEl.style.padding = '36px';
+        loadingEl.style.color = '#4b5563';
+        loadingEl.style.fontWeight = '600';
+        loadingEl.textContent = 'Renderizando páginas do documento PDF...';
+        pagesContainer.appendChild(loadingEl);
+
+        // 1. Renderização nativa via PDF.js no WebEngine (funciona 100% no Ubuntu Touch sem depender de pdftoppm)
+        if (window.pdfjsLib) {
+          try {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.worker.min.js?v=3';
+            const binaryStr = window.atob(activeTab.base64);
+            const pdfBytes = new Uint8Array(binaryStr.length);
+            for (let i = 0; i < binaryStr.length; i++) {
+              pdfBytes[i] = binaryStr.charCodeAt(i);
+            }
+
+            const loadingTask = window.pdfjsLib.getDocument({
+              data: pdfBytes,
+              isOffscreenCanvasSupported: false,
+              isEvalSupported: false
+            });
+            const pdfDoc = await loadingTask.promise;
+            pagesContainer.innerHTML = '';
+
+            const targetCssWidth = Math.min(720, Math.max(280, window.innerWidth - 20));
+            const dpr = Math.min(window.devicePixelRatio || 2, 2.5);
+
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+              const page = await pdfDoc.getPage(pageNum);
+              const unscaledVp = page.getViewport({ scale: 1.0 });
+              const cssScale = targetCssWidth / (unscaledVp.width || 595);
+              const renderViewport = page.getViewport({ scale: cssScale * dpr });
+
+              const card = document.createElement('div');
+              card.className = 'pdf-page-card ' + (state.interactionMode === 'stamp' ? 'stamp-mode' : 'scroll-mode');
+
+              const badge = document.createElement('div');
+              badge.style.position = 'absolute';
+              badge.style.top = '8px';
+              badge.style.right = '8px';
+              badge.style.background = 'rgba(17, 24, 39, 0.68)';
+              badge.style.color = '#fff';
+              badge.style.fontSize = '11px';
+              badge.style.fontWeight = '700';
+              badge.style.padding = '3px 8px';
+              badge.style.borderRadius = '999px';
+              badge.style.pointerEvents = 'none';
+              badge.style.zIndex = '5';
+              badge.textContent = 'Pág. ' + pageNum + ' / ' + pdfDoc.numPages;
+              card.appendChild(badge);
+
+              const canvas = document.createElement('canvas');
+              canvas.className = 'pdf-page-img';
+              canvas.width = Math.floor(renderViewport.width);
+              canvas.height = Math.floor(renderViewport.height);
+              card.appendChild(canvas);
+
+              attachStampInteraction(card, pageNum);
+              pagesContainer.appendChild(card);
+
+              const ctx = canvas.getContext('2d');
+              await page.render({
+                canvasContext: ctx,
+                viewport: renderViewport,
+                annotationMode: 2
+              }).promise;
+            }
+            return;
+          } catch (pdfJsErr) {
+            console.warn('Fallback para /api/render-pdf após erro no PDF.js:', pdfJsErr);
+          }
+        }
+
+        // 2. Fallback para /api/render-pdf
+        try {
+          const resp = await fetch('/api/render-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pdfBase64: activeTab.base64 })
+          });
+          const data = await resp.json();
+          pagesContainer.innerHTML = '';
+
+          const pages = (data.success && data.pages && data.pages.length > 0)
+            ? data.pages
+            : [{ page: 1, width: 595, height: 842, imageBase64: null }];
+
+          pages.forEach((pInfo) => {
+            const card = document.createElement('div');
+            card.className = 'pdf-page-card ' + (state.interactionMode === 'stamp' ? 'stamp-mode' : 'scroll-mode');
+            const aspect = (pInfo.height || 842) / (pInfo.width || 595);
+
+            if (pInfo.imageBase64) {
+              const img = document.createElement('img');
+              img.className = 'pdf-page-img';
+              img.src = 'data:image/png;base64,' + pInfo.imageBase64;
+              card.appendChild(img);
+            } else {
+              card.style.minHeight = Math.round((window.innerWidth - 24) * aspect) + 'px';
+              const fallback = document.createElement('div');
+              fallback.style.padding = '24px';
+              fallback.style.textAlign = 'center';
+              fallback.style.color = '#4b5563';
+              fallback.textContent = 'Página ' + pInfo.page + ' (' + activeTab.name + ') — Toque aqui para posicionar a assinatura.';
+              card.appendChild(fallback);
+            }
+
+            attachStampInteraction(card, pInfo.page);
+            pagesContainer.appendChild(card);
+          });
+        } catch (err) {
+          pagesContainer.innerHTML = '<div style="padding:24px;color:#dc2626;">Erro ao renderizar PDF: ' + err + '</div>';
+        }
+      }
+
+      function setInteractionMode(mode) {
+        state.interactionMode = mode;
+        modeScrollBtn.classList.toggle('active', mode === 'scroll');
+        modeStampBtn.classList.toggle('active', mode === 'stamp');
+        document.querySelectorAll('.pdf-page-card').forEach((card) => {
+          card.classList.toggle('stamp-mode', mode === 'stamp');
+          card.classList.toggle('scroll-mode', mode === 'scroll');
+        });
+      }
+
+      modeScrollBtn.onclick = () => setInteractionMode('scroll');
+      modeStampBtn.onclick = () => setInteractionMode('stamp');
+
+      async function checkPendingFiles() {
+        try {
+          const resp = await fetch('/api/pending-files');
+          if (!resp.ok) return;
+          const data = await resp.json();
+          if (data.success && Array.isArray(data.files) && data.files.length > 0) {
+            data.files.forEach((f) => {
+              const id = 'tab-' + Date.now() + '-' + Math.random();
+              state.tabs.push({ id, name: f.name, path: f.path, base64: f.base64 });
+              state.activeTabId = id;
+            });
+            renderTabs();
+            renderActiveDocument();
+          }
+        } catch (e) {
+          console.error('Erro ao checar ContentHub:', e);
+        }
+      }
+
+      window.addEventListener('ut-check-pending-files', checkPendingFiles);
+      checkPendingFiles();
+
+      async function requestOpenViaContentHub() {
+        try {
+          const resp = await fetch('/api/request-open-dialog', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}'
+          });
+          if (!resp.ok) htmlFileInput.click();
+        } catch {
+          htmlFileInput.click();
+        }
+      }
+
+      htmlFileInput.onchange = async (e) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        for (const file of Array.from(files)) {
+          const buf = await file.arrayBuffer();
+          const bytes = new Uint8Array(buf);
+          let binary = '';
+          const chunk = 0x8000;
+          for (let i = 0; i < bytes.length; i += chunk) {
+            binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+          }
+          const base64 = window.btoa(binary);
+          const id = 'tab-' + Date.now() + '-' + Math.random();
+          state.tabs.push({ id, name: file.name, path: '', base64 });
+          state.activeTabId = id;
+        }
+        htmlFileInput.value = '';
+        renderTabs();
+        renderActiveDocument();
+      };
+
+      document.getElementById('btn-open-bottom').onclick = requestOpenViaContentHub;
+      document.getElementById('btn-empty-open').onclick = requestOpenViaContentHub;
+
+      // Modal de Logos / Selos
+      const iconModal = document.getElementById('icon-modal');
+      function openIconModal() {
+        const container = document.getElementById('icon-list-container');
+        container.innerHTML = '';
+        ICONS.forEach((ic) => {
+          const row = document.createElement('div');
+          row.className = 'cert-card' + (state.selectedIcon === ic.id ? ' selected' : '');
+          row.innerHTML =
+            '<img src="' + ic.img + '" style="width:52px;height:52px;object-fit:contain;" />' +
+            '<div style="flex:1;"><strong style="font-size:16px;color:var(--gray-900);">' + ic.name + '</strong>' +
+            (state.selectedIcon === ic.id ? '<div style="font-size:12px;color:var(--blue-600);font-weight:700;margin-top:2px;">✓ Logo selecionada</div>' : '') +
+            '</div>';
+          row.onclick = () => {
+            state.selectedIcon = ic.id;
+            document.getElementById('bottom-seal-img').src = ic.img;
+            document.getElementById('header-logo-img').src = ic.img;
+            iconModal.classList.add('hidden');
+          };
+          container.appendChild(row);
+        });
+        iconModal.classList.remove('hidden');
+      }
+      document.getElementById('btn-icon-bottom').onclick = openIconModal;
+      document.getElementById('close-icon-modal').onclick = () => iconModal.classList.add('hidden');
+      document.getElementById('btn-close-icon-footer').onclick = () => iconModal.classList.add('hidden');
+
+      // Modal Sobre
+      const aboutModal = document.getElementById('about-modal');
+      document.getElementById('btn-about-bottom').onclick = () => aboutModal.classList.remove('hidden');
+      document.getElementById('close-about-modal').onclick = () => aboutModal.classList.add('hidden');
+      document.getElementById('btn-close-about').onclick = () => aboutModal.classList.add('hidden');
+
+      // Modal de Certificados SerproID
+      const certModal = document.getElementById('cert-modal');
+      const certListContainer = document.getElementById('cert-list-container');
+      const pairPanel = document.getElementById('pair-panel');
+      const pairQrImg = document.getElementById('pair-qr-img');
+
+      function renderCertificatesList() {
+        updateHeaderCertStatus();
+        if (state.isSigning) {
+          pairPanel.classList.add('hidden');
+          certListContainer.innerHTML =
+            '<div style="text-align:center;padding:28px 12px;">' +
+            '<div class="spinner"></div>' +
+            '<div style="font-weight:800;color:var(--blue-700);font-size:16px;margin-bottom:8px;">📲 Autorize com seu PIN no app SerproID!</div>' +
+            '<p style="font-size:13px;color:var(--gray-600);line-height:1.45;">Foi enviada uma notificação de assinatura para o aplicativo <strong>SerproID</strong>. Digite o PIN do seu certificado para concluir a assinatura digital.</p>' +
+            '</div>';
+          return;
+        }
+
+        if (state.certificates.length === 0) {
+          certListContainer.innerHTML =
+            '<div style="text-align:center;padding:18px;background:var(--gray-50);border:1.5px dashed var(--gray-300);border-radius:14px;color:var(--gray-600);font-size:13px;line-height:1.45;">' +
+            '<strong>Nenhum certificado instalado ainda.</strong>' +
+            '<p style="margin-top:4px;">Siga o <strong>Passo 1</strong> acima lendo o QR Code na opção <strong>Computadores</strong> do aplicativo SerproID e depois toque em <strong>2️⃣ Ler Certificados</strong>.</p>' +
+            '</div>';
+          return;
+        }
+
+        certListContainer.innerHTML = '<div style="font-size:13px;font-weight:800;color:var(--gray-700);margin-bottom:8px;">Certificados Instalados (' + state.certificates.length + '):</div>';
+        state.certificates.forEach((cert, idx) => {
+          const card = document.createElement('div');
+          card.className = 'cert-card' + (state.selectedCertIndex === idx ? ' selected' : '');
+          const cleanName = cert.subject ? cert.subject.replace(/:.*/, '') : 'Certificado ICP-Brasil';
+          const cpfCnpj = cert.subject && cert.subject.indexOf(':') !== -1 ? cert.subject.split(':')[1] : '';
+          const notAfterStr = cert.validity && cert.validity.notAfter
+            ? new Date(cert.validity.notAfter).toLocaleDateString('pt-BR')
+            : '-';
+          card.innerHTML =
+            '<div style="min-width:0;flex:1;">' +
+            '<div style="font-weight:800;font-size:15px;color:var(--gray-900);margin-bottom:3px;">' + cleanName + '</div>' +
+            (cpfCnpj ? '<div style="font-size:12px;color:var(--blue-700);font-weight:700;margin-bottom:2px;">Documento: ' + cpfCnpj + '</div>' : '') +
+            '<div style="font-size:12px;color:var(--gray-600);"><strong>Emissor:</strong> ' + cert.issuer + '</div>' +
+            '<div style="font-size:12px;color:var(--gray-600);"><strong>Validade:</strong> <span style="color:var(--green-600);font-weight:700;">' + notAfterStr + '</span></div>' +
+            '<div style="font-size:11px;color:var(--gray-400);font-family:monospace;margin-top:3px;">ID SerproID: ' + cert.slotId + '</div>' +
+            '</div>';
+          card.onclick = () => {
+            state.selectedCertIndex = idx;
+            renderCertificatesList();
+          };
+          certListContainer.appendChild(card);
+        });
+      }
+
+      async function generateAndShowQrCode(forceNew) {
+        showBanner('Gerando QR Code de autorização junto ao servidor SerproID...', false);
+        try {
+          const resp = await fetch('/api/serproid/pair', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ forceNew: Boolean(forceNew) })
+          });
+          const data = await resp.json();
+          if (data.success && data.qrSvgDataUri) {
+            pairQrImg.src = data.qrSvgDataUri;
+            pairPanel.classList.remove('hidden');
+            showBanner('Leia o QR Code abaixo no menu "Computadores" do app SerproID e depois toque em "Ler Certificados".', false);
+          } else {
+            showBanner('Erro ao gerar QR Code: ' + (data.error || 'Falha desconhecida'), true);
+          }
+        } catch (err) {
+          showBanner('Falha de conexão com o SerproID: ' + err, true);
+        }
+      }
+
+      async function syncCertificatesFromSerpro() {
+        showBanner('Consultando certificados autorizados no SerproID...', false);
+        try {
+          const resp = await fetch('/api/serproid/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}'
+          });
+          const data = await resp.json();
+          if (data.success && data.certs && data.certs.length > 0) {
+            state.certificates = data.certs;
+            state.selectedCertIndex = 0;
+            pairPanel.classList.add('hidden');
+            showBanner('✅ ' + data.certs.length + ' certificado(s) lido(s) e instalado(s) com sucesso!', false);
+            renderCertificatesList();
+          } else {
+            showBanner(data.error || 'Nenhum certificado retornado.', true);
+          }
+        } catch (err) {
+          showBanner('Erro ao ler certificados: ' + err, true);
+        }
+      }
+
+      async function openCertModal() {
+        certModal.classList.remove('hidden');
+        showBanner('', false);
+        certListContainer.innerHTML = '<div style="text-align:center;padding:24px;"><div class="spinner"></div><div style="font-size:13px;color:var(--gray-600);">Verificando certificados instalados...</div></div>';
+        try {
+          const resp = await fetch('/api/certificates');
+          const data = await resp.json();
+          state.certificates = (data.success && data.certs) ? data.certs : [];
+          state.selectedCertIndex = 0;
+          renderCertificatesList();
+
+          // Se ainda não há nenhum certificado instalado, já abre automaticamente o Passo 1 (QR Code)!
+          if (state.certificates.length === 0) {
+            await generateAndShowQrCode(false);
+          }
+        } catch (err) {
+          showBanner('Erro ao carregar certificados: ' + err, true);
+          renderCertificatesList();
+        }
+      }
+
+      // Carrega certificados inicialmente em background para atualizar o topo
+      fetch('/api/certificates')
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && data.success && Array.isArray(data.certs)) {
+            state.certificates = data.certs;
+            updateHeaderCertStatus();
+          }
+        })
+        .catch(() => {});
+
+      document.getElementById('btn-cert-bottom').onclick = openCertModal;
+      document.getElementById('btn-top-cert').onclick = openCertModal;
+      document.getElementById('btn-empty-cert').onclick = openCertModal;
+      document.getElementById('btn-fab-sign').onclick = openCertModal;
+      document.getElementById('close-cert-modal').onclick = () => certModal.classList.add('hidden');
+      document.getElementById('btn-cancel-cert').onclick = () => certModal.classList.add('hidden');
+
+      document.getElementById('btn-pair-serpro').onclick = () => generateAndShowQrCode(false);
+      document.getElementById('btn-new-qr').onclick = () => generateAndShowQrCode(true);
+      document.getElementById('btn-sync-serpro').onclick = syncCertificatesFromSerpro;
+      document.getElementById('btn-sync-inside-qr').onclick = syncCertificatesFromSerpro;
+
+      document.getElementById('btn-confirm-sign').onclick = async () => {
+        const activeTab = state.tabs.find((t) => t.id === state.activeTabId);
+        if (!activeTab) {
+          showBanner('Abra um documento PDF primeiro para poder assinar.', true);
+          return;
+        }
+        const cert = state.certificates[state.selectedCertIndex];
+        if (!cert) {
+          showBanner('Autorize e leia seu certificado SerproID antes de assinar.', true);
+          return;
+        }
+
+        state.isSigning = true;
+        renderCertificatesList();
+        showBanner('', false);
+
+        try {
+          const resp = await fetch('/api/sign-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              pdfBase64: activeTab.base64,
+              slotId: cert.slotId,
+              certDerBase64: cert.rawDerBase64,
+              chainB64: cert.chainB64 || [cert.rawDerBase64],
+              originalName: activeTab.name,
+              signatureBox: state.signatureBox,
+              iconName: state.selectedIcon
+            })
+          });
+          const data = await resp.json();
+          state.isSigning = false;
+
+          if (data.success && data.signedBase64) {
+            activeTab.base64 = data.signedBase64;
+            activeTab.name = data.fileName || activeTab.name;
+            activeTab.path = data.destPath || activeTab.path;
+            state.signatureBox = null;
+            certModal.classList.add('hidden');
+            renderTabs();
+            renderActiveDocument();
+          } else {
+            renderCertificatesList();
+            showBanner('Erro na assinatura: ' + (data.error || 'Falha desconhecida.'), true);
+          }
+        } catch (err) {
+          state.isSigning = false;
+          renderCertificatesList();
+          showBanner('Erro de comunicação durante assinatura: ' + err, true);
+        }
+      };
+    })();
+  </script>
+</body>
+</html>
